@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#08030d">
+<title>Ganesh Chaturthi | Ideal Computer Education, Titilagarh</title>
+
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08030d}
+body{font-family:Georgia,"Times New Roman",serif;touch-action:none}
+#stage{position:fixed;inset:0}
+canvas{display:block;width:100%;height:100%}
+
+#ui{
+  position:fixed;inset:0;z-index:10;pointer-events:none;color:white;text-align:center;
+  background:
+    radial-gradient(circle at 50% 43%,rgba(255,155,35,.18),transparent 27%),
+    radial-gradient(circle at 50% 50%,rgba(116,35,170,.14),transparent 62%);
+}
+
+#top{
+  position:absolute;top:max(24px,env(safe-area-inset-top));left:0;width:100%;
+  padding:10px 16px
+}
+#eyebrow{
+  font:11px Arial,sans-serif;letter-spacing:4px;text-transform:uppercase;opacity:.72
+}
+#title{
+  display:none;margin-top:10px;font-size:clamp(25px,7vw,46px);
+  color:#ffd36a;text-shadow:0 0 18px rgba(255,160,25,.8)
+}
+
+#hint{
+  position:absolute;left:50%;bottom:11%;transform:translateX(-50%);
+  width:92%;font:600 13px Arial,sans-serif;letter-spacing:2.5px;
+  text-transform:uppercase;animation:pulse 1.6s ease-in-out infinite
+}
+#hint span{
+  display:inline-block;margin-top:10px;padding:12px 22px;
+  border:1px solid rgba(255,214,110,.45);border-radius:999px;
+  background:rgba(255,255,255,.06);backdrop-filter:blur(8px)
+}
+
+#greeting{
+  position:absolute;left:50%;bottom:max(6%,env(safe-area-inset-bottom));
+  transform:translateX(-50%);width:94%;max-width:800px;opacity:0;
+  transition:opacity 1.8s ease;text-shadow:0 2px 20px #000
+}
+#greeting .main{
+  font-size:clamp(21px,6.8vw,48px);font-weight:bold;color:#ffd76e
+}
+#greeting .sub{
+  margin-top:12px;font:15px Arial,sans-serif;line-height:1.5;letter-spacing:1px
+}
+#sound{
+  position:absolute;top:18px;right:16px;font:10px Arial,sans-serif;
+  letter-spacing:1px;opacity:0;transition:opacity 1s
+}
+#again{
+  display:none;position:absolute;right:16px;bottom:18px;pointer-events:auto;
+  padding:10px 15px;border:1px solid rgba(255,255,255,.35);
+  border-radius:22px;color:white;background:rgba(0,0,0,.35)
+}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+</style>
+</head>
+
+<body>
+<div id="stage"></div>
+
+<div id="ui">
+  <div id="top">
+    <div id="eyebrow">A Festive Digital Greeting</div>
+    <div id="title">🙏 Ganpati Bappa Morya 🙏</div>
+  </div>
+
+  <div id="hint">
+    Touch the Lantern<br>
+    <span>✨ Touch to Reveal ✨</span>
+  </div>
+
+  <div id="sound">🎵 Bhajan playing</div>
+
+  <div id="greeting">
+    <div class="main">श्री गणेश चतुर्थी की हार्दिक शुभकामनाएँ</div>
+    <div class="sub">
+      With warm wishes from<br>
+      <strong>Ideal Computer Education, Titilagarh</strong>
+    </div>
+  </div>
+
+  <button id="again">Replay</button>
+</div>
+
+<!-- EXACT filename from your GitHub repository -->
+<audio id="bhajan" preload="auto" playsinline>
+  <source src="./Ganesh%20Music.mp3" type="audio/mpeg">
+</audio>
+
+<script type="module">
+import * as THREE from
+  "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+import { GLTFLoader } from
+  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
+/* ============================================================
+   SETUP
+   ============================================================ */
+
+const stage = document.getElementById("stage");
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x08030d);
+scene.fog = new THREE.FogExp2(0x08030d, 0.032);
+
+const camera = new THREE.PerspectiveCamera(
+  42,
+  innerWidth / innerHeight,
+  0.05,
+  100
+);
+
+camera.position.set(0, 0.9, 7.5);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  powerPreference: "high-performance"
+});
+
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+stage.appendChild(renderer.domElement);
+
+/* Lighting */
+scene.add(new THREE.HemisphereLight(0xffe4bd, 0x160824, 2.4));
+
+const warmLight = new THREE.PointLight(0xff9d22, 7, 14);
+warmLight.position.set(2.5, 3.5, 4);
+scene.add(warmLight);
+
+const purpleLight = new THREE.PointLight(0x914cff, 5, 12);
+purpleLight.position.set(-3, 1, 2);
+scene.add(purpleLight);
+
+
+/* ============================================================
+   BACKGROUND STARS
+   ============================================================ */
+
+const starGeometry = new THREE.BufferGeometry();
+const starPositions = new Float32Array(550 * 3);
+
+for (let i = 0; i < 550; i++) {
+  starPositions[i * 3] =
+    (Math.random() - 0.5) * 18;
+
+  starPositions[i * 3 + 1] =
+    (Math.random() - 0.5) * 13;
+
+  starPositions[i * 3 + 2] =
+    (Math.random() - 0.5) * 8;
+}
+
+starGeometry.setAttribute(
+  "position",
+  new THREE.BufferAttribute(starPositions, 3)
+);
+
+scene.add(
+  new THREE.Points(
+    starGeometry,
+    new THREE.PointsMaterial({
+      color: 0xffd98b,
+      size: 0.035,
+      transparent: true,
+      opacity: 0.75
+    })
+  )
+);
+
+
+/* ============================================================
+   OBJECT GROUPS
+   ============================================================ */
+
+const lanternGroup = new THREE.Group();
+const ganeshGroup = new THREE.Group();
+
+scene.add(lanternGroup);
+scene.add(ganeshGroup);
+
+ganeshGroup.visible = false;
+
+const loader = new GLTFLoader();
+
+let lanternMeshes = [];
+let brokenPieces = [];
+let particles = [];
+let activated = false;
+
+
+/* ============================================================
+   LOAD YOUR Lantern.glb
+   ============================================================ */
+
+loader.load(
+  "./Lantern.glb",
+
+  gltf => {
+    const root = gltf.scene;
+
+    root.traverse(object => {
+      if (object.isMesh) {
+        lanternMeshes.push(object);
+        object.frustumCulled = false;
+      }
+    });
+
+    /*
+      Automatically scale the uploaded GLB so that different
+      model dimensions still fit nicely on a phone screen.
+    */
+    const box = new THREE.Box3().setFromObject(root);
+    const size = box.getSize(new THREE.Vector3());
+
+    const largest = Math.max(
+      size.x,
+      size.y,
+      size.z
+    ) || 1;
+
+    root.scale.setScalar(3.15 / largest);
+
+    const fittedBox = new THREE.Box3().setFromObject(root);
+    const center = fittedBox.getCenter(new THREE.Vector3());
+
+    root.position.sub(center);
+    root.position.y = -0.1;
+
+    lanternGroup.add(root);
+  },
+
+  undefined,
+
+  error => {
+    console.error("Lantern.glb failed to load:", error);
+    createFallbackLantern();
+  }
+);
+
+
+/* Fallback only if the GLB cannot load */
+function createFallbackLantern() {
+
+  const group = new THREE.Group();
+
+  const metal = new THREE.MeshStandardMaterial({
+    color: 0xd88a20,
+    metalness: 0.3,
+    roughness: 0.35
+  });
+
+  const glass = new THREE.MeshPhysicalMaterial({
+    color: 0xff9b25,
+    transparent: true,
+    opacity: 0.55,
+    roughness: 0.15,
+    metalness: 0.15,
+    emissive: 0x441600
+  });
+
+  group.add(
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        0.75, 0.9, 1.7, 32, 1, true
+      ),
+      glass
+    )
+  );
+
+  for (let i = 0; i < 4; i++) {
+
+    const bar = new THREE.Mesh(
+      new THREE.BoxGeometry(0.09, 1.9, 0.09),
+      metal
+    );
+
+    const angle = i * Math.PI / 2;
+
+    bar.position.set(
+      Math.cos(angle) * 0.78,
+      0,
+      Math.sin(angle) * 0.78
+    );
+
+    group.add(bar);
+  }
+
+  group.position.y = -0.1;
+  lanternGroup.add(group);
+
+  group.traverse(object => {
+    if (object.isMesh) lanternMeshes.push(object);
+  });
+}
+
+
+/* ============================================================
+   LOAD YOUR Ganesh.png
+   ============================================================ */
+
+new THREE.TextureLoader().load(
+  "./Ganesh.png",
+
+  texture => {
+
+    texture.colorSpace = THREE.SRGBColorSpace;
+
+    const imageRatio =
+      texture.image.width /
+      texture.image.height || 1;
+
+    const height = 3.65;
+    const width = height * imageRatio;
+
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthWrite: false
+    });
+
+    const imagePlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(width, height),
+      material
+    );
+
+    imagePlane.position.y = -0.15;
+
+    ganeshGroup.add(imagePlane);
+  },
+
+  undefined,
+
+  error => {
+    console.error("Ganesh.png failed to load:", error);
+  }
+);
+
+
+/* ============================================================
+   TOUCH THE LANTERN
+   ============================================================ */
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
+renderer.domElement.addEventListener(
+  "pointerdown",
+  event => {
+
+    if (activated) return;
+
+    pointer.x =
+      (event.clientX / innerWidth) * 2 - 1;
+
+    pointer.y =
+      -(event.clientY / innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+
+    const hits =
+      raycaster.intersectObjects(
+        lanternGroup.children,
+        true
+      );
+
+    if (hits.length > 0) {
+      breakLantern();
+    }
+  }
+);
+
+
+/* ============================================================
+   BREAK SEQUENCE
+   ============================================================ */
+
+function breakLantern() {
+
+  if (activated) return;
+
+  activated = true;
+
+  document.getElementById("hint").style.display = "none";
+
+  /*
+    Duplicate every mesh of the lantern and send the pieces
+    outward. This gives the impression that the actual lantern
+    is breaking apart.
+  */
+
+  const center = new THREE.Vector3(0, 0, 0);
+
+  lanternMeshes.forEach(source => {
+
+    const piece = source.clone(true);
+
+    if (source.material) {
+      piece.material =
+        source.material.clone
+          ? source.material.clone()
+          : source.material;
+    }
+
+    piece.position.copy(
+      source.getWorldPosition(
+        new THREE.Vector3()
+      )
+    );
+
+    piece.quaternion.copy(
+      source.getWorldQuaternion(
+        new THREE.Quaternion()
+      )
+    );
+
+    piece.scale.copy(
+      source.getWorldScale(
+        new THREE.Vector3()
+      )
+    );
+
+    scene.add(piece);
+
+    const direction =
+      piece.position
+        .clone()
+        .sub(center)
+        .normalize();
+
+    if (!Number.isFinite(direction.x)) {
+      direction.set(0, 1, 0);
+    }
+
+    brokenPieces.push({
+      mesh: piece,
+
+      velocity: new THREE.Vector3(
+        direction.x * (1.5 + Math.random() * 2.3)
+          + (Math.random() - 0.5) * 0.8,
+
+        0.9 + Math.random() * 2.8,
+
+        direction.z * (1.5 + Math.random() * 2.3)
+          + (Math.random() - 0.5) * 0.8
+      ),
+
+      rotation: new THREE.Vector3(
+        (Math.random() - 0.5) * 0.2,
+        (Math.random() - 0.5) * 0.2,
+        (Math.random() - 0.5) * 0.2
+      ),
+
+      life: 1.45
+    });
+  });
+
+  lanternGroup.visible = false;
+
+  /* Golden impact */
+  particleBurst(
+    0, 0, 0,
+    0xffb52e,
+    110
+  );
+
+  /*
+    Reveal and music are deliberately synchronized.
+    The bhajan starts at the same moment Shri Ganesh appears.
+  */
+  setTimeout(() => {
+
+    revealGanesh();
+
+    const audio =
+      document.getElementById("bhajan");
+
+    audio.currentTime = 0;
+
+    audio.play()
+      .then(() => {
+        document.getElementById("sound").style.opacity = "1";
+      })
+      .catch(error => {
+        console.warn(
+          "Bhajan could not start:",
+          error
+        );
+      });
+
+  }, 300);
+}
+
+
+/* ============================================================
+   GANESH REVEAL
+   ============================================================ */
+
+function revealGanesh() {
+
+  ganeshGroup.visible = true;
+  ganeshGroup.scale.setScalar(0.02);
+
+  const start = performance.now();
+  const duration = 950;
+
+  function animateReveal(now) {
+
+    const progress =
+      Math.min(
+        (now - start) / duration,
+        1
+      );
+
+    const eased =
+      1 - Math.pow(1 - progress, 4);
+
+    ganeshGroup.scale.setScalar(
+      0.02 + eased * 0.98
+    );
+
+    if (progress < 1) {
+      requestAnimationFrame(animateReveal);
+    }
+  }
+
+  requestAnimationFrame(animateReveal);
+
+  document.getElementById("title").style.display = "block";
+  document.getElementById("greeting").style.opacity = "1";
+
+  flowerShower();
+  holiColours();
+  fireworks();
+
+  document.getElementById("again").style.display = "block";
+}
+
+
+/* ============================================================
+   PARTICLE ENGINE
+   ============================================================ */
+
+function particleBurst(
+  x, y, z,
+  color,
+  count
+) {
+
+  for (let i = 0; i < count; i++) {
+
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(
+        0.025 + Math.random() * 0.045,
+        7, 7
+      ),
+      new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true
+      })
+    );
+
+    mesh.position.set(x, y, z);
+
+    scene.add(mesh);
+
+    particles.push({
+      mesh: mesh,
+
+      velocity: new THREE.Vector3(
+        (Math.random() - 0.5) * 5.2,
+        (Math.random() - 0.12) * 5.2,
+        (Math.random() - 0.5) * 4.2
+      ),
+
+      life: 1.5 + Math.random()
+    });
+  }
+}
+
+
+/* ============================================================
+   FLOWERS
+   ============================================================ */
+
+function flowerShower() {
+
+  const colours = [
+    0xffd84d,
+    0xff8b24,
+    0xff5a6f,
+    0xffb7dc
+  ];
+
+  for (let i = 0; i < 120; i++) {
+
+    const petal = new THREE.Mesh(
+      new THREE.SphereGeometry(
+        0.045 + Math.random() * 0.045,
+        7, 6
+      ),
+      new THREE.MeshBasicMaterial({
+        color: colours[i % colours.length],
+        transparent: true
+      })
+    );
+
+    petal.position.set(
+      (Math.random() - 0.5) * 10,
+      5.5 + Math.random() * 4,
+      (Math.random() - 0.5) * 4
+    );
+
+    scene.add(petal);
+
+    particles.push({
+      mesh: petal,
+
+      velocity: new THREE.Vector3(
+        (Math.random() - 0.5) * 0.8,
+        -1.4 - Math.random() * 2.2,
+        (Math.random() - 0.5) * 0.35
+      ),
+
+      life: 5 + Math.random() * 3
+    });
+  }
+}
+
+
+/* ============================================================
+   HOLI COLOURS
+   ============================================================ */
+
+function holiColours() {
+
+  const colours = [
+    0xff1744,
+    0xffd500,
+    0x00e676,
+    0x2979ff,
+    0xd500f9
+  ];
+
+  colours.forEach((colour, index) => {
+
+    setTimeout(() => {
+
+      particleBurst(
+        (Math.random() - 0.5) * 2,
+        0,
+        0,
+        colour,
+        70
+      );
+
+    }, index * 120);
+  });
+}
+
+
+/* ============================================================
+   FIREWORKS
+   ============================================================ */
+
+function fireworks() {
+
+  const colours = [
+    0xffd740,
+    0xff4081,
+    0x40c4ff,
+    0x69f0ae
+  ];
+
+  for (let i = 0; i < 9; i++) {
+
+    setTimeout(() => {
+
+      particleBurst(
+        (Math.random() - 0.5) * 7,
+        1.8 + Math.random() * 3.7,
+        (Math.random() - 0.5) * 2,
+        colours[i % colours.length],
+        75
+      );
+
+    }, i * 420);
+  }
+}
+
+
+/* ============================================================
+   REPLAY
+   ============================================================ */
+
+document.getElementById("again").addEventListener(
+  "click",
+  () => location.reload()
+);
+
+
+/* ============================================================
+   ANIMATION LOOP
+   ============================================================ */
+
+let lastTime = performance.now();
+
+function animate(now) {
+
+  requestAnimationFrame(animate);
+
+  const delta =
+    Math.min(
+      (now - lastTime) / 1000,
+      0.033
+    );
+
+  lastTime = now;
+
+  if (!activated) {
+
+    lanternGroup.rotation.y =
+      Math.sin(now * 0.00055) * 0.16;
+
+    lanternGroup.rotation.z =
+      Math.sin(now * 0.0008) * 0.025;
+
+    lanternGroup.position.y =
+      Math.sin(now * 0.0012) * 0.08;
+
+  } else {
+
+    ganeshGroup.rotation.y =
+      Math.sin(now * 0.00035) * 0.045;
+  }
+
+  /* Broken lantern pieces */
+  for (
+    let i = brokenPieces.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    const p = brokenPieces[i];
+
+    p.velocity.y -= 3.2 * delta;
+
+    p.mesh.position.addScaledVector(
+      p.velocity,
+      delta
+    );
+
+    p.mesh.rotation.x += p.rotation.x;
+    p.mesh.rotation.y += p.rotation.y;
+    p.mesh.rotation.z += p.rotation.z;
+
+    p.life -= delta;
+
+    if (p.life <= 0) {
+
+      scene.remove(p.mesh);
+      brokenPieces.splice(i, 1);
+    }
+  }
+
+  /* Celebration particles */
+  for (
+    let i = particles.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    const p = particles[i];
+
+    p.velocity.y -= 1.4 * delta;
+
+    p.mesh.position.addScaledVector(
+      p.velocity,
+      delta
+    );
+
+    p.mesh.rotation.x += 0.08;
+    p.mesh.rotation.z += 0.06;
+
+    p.life -= delta;
+
+    p.mesh.material.opacity =
+      Math.max(0, p.life);
+
+    if (p.life <= 0) {
+
+      scene.remove(p.mesh);
+
+      p.mesh.geometry.dispose();
+      p.mesh.material.dispose();
+
+      particles.splice(i, 1);
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+
+requestAnimationFrame(animate);
+
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+
+addEventListener("resize", () => {
+
+  camera.aspect =
+    innerWidth / innerHeight;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setPixelRatio(
+    Math.min(devicePixelRatio, 1.8)
+  );
+
+  renderer.setSize(
+    innerWidth,
+    innerHeight
+  );
+});
+</script>
+</body>
+</html>
