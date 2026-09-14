@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#08030d">
+<title>Ganesh Chaturthi • Ideal Computer Education</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08030d}
+body{touch-action:none;font-family:Georgia,"Times New Roman",serif}#stage{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}
+#ui{position:fixed;inset:0;z-index:5;pointer-events:none;text-align:center;color:#fff;background:radial-gradient(circle at 50% 42%,#ff9f2228,transparent 28%),radial-gradient(circle,#7130a020,transparent 60%)}
+#top{position:absolute;top:max(28px,env(safe-area-inset-top));width:100%;padding:10px}
+#eyebrow{font:11px Arial,sans-serif;letter-spacing:4px;text-transform:uppercase;opacity:.7}
+#title{display:none;margin:10px;font-size:clamp(24px,7vw,46px);color:#ffd36a;text-shadow:0 0 18px #ff9d00}
+#hint{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);font:600 13px Arial;letter-spacing:2px;text-transform:uppercase;animation:pulse 1.7s infinite}
+#hint span{display:inline-block;margin-top:10px;padding:11px 20px;border:1px solid #ffd66a66;border-radius:999px;background:#ffffff0d}
+#greeting{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);width:94%;opacity:0;transition:opacity 1.8s;text-shadow:0 2px 20px #000}
+#greeting .main{font-size:clamp(22px,7vw,48px);font-weight:bold;color:#ffd76e}
+#greeting .sub{margin-top:12px;font:15px Arial;line-height:1.5;letter-spacing:1px}
+#sound{position:absolute;top:18px;right:18px;font:10px Arial;opacity:0;transition:opacity 1s}
+#again{display:none;position:absolute;right:16px;bottom:18px;pointer-events:auto;padding:10px 15px;border:1px solid #ffffff55;border-radius:20px;color:white;background:#0005}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="ui">
+<div id="top"><div id="eyebrow">A Festive Digital Greeting</div><div id="title">🙏 Ganpati Bappa Morya 🙏</div></div>
+<div id="hint">Touch the lantern<br><span>✨ Touch to reveal ✨</span></div>
+<div id="sound">🎵 Bhajan playing</div>
+<div id="greeting"><div class="main">श्री गणेश चतुर्थी की हार्दिक शुभकामनाएँ</div><div class="sub">With warm wishes from<br><strong>Ideal Computer Education, Titilagarh</strong></div></div>
+<button id="again">Replay</button>
+</div>
+<audio id="bhajan" preload="auto" playsinline><source src="./bhajan.mp3" type="audio/mpeg"></audio>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import {GLTFLoader} from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x08030d);scene.fog=new THREE.FogExp2(0x08030d,.035);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.05,100);camera.position.set(0,1,7.5);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.getElementById("stage").appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffe2b0,0x190b28,2.3));
+let light=new THREE.PointLight(0xff9f24,7,13);light.position.set(2.5,3.5,4);scene.add(light);
+light=new THREE.PointLight(0x8c4dff,5,12);light.position.set(-3,1,2);scene.add(light);
+
+const sg=new THREE.BufferGeometry(),sp=new Float32Array(500*3);
+for(let i=0;i<500;i++){sp[i*3]=(Math.random()-.5)*18;sp[i*3+1]=(Math.random()-.5)*13;sp[i*3+2]=(Math.random()-.5)*8}
+sg.setAttribute("position",new THREE.BufferAttribute(sp,3));scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xffd98b,size:.035,transparent:true,opacity:.75})));
+
+const loader=new GLTFLoader(),lantern=new THREE.Group(),ganesh=new THREE.Group();scene.add(lantern,ganesh);ganesh.visible=false;
+let meshes=[],pieces=[],particles=[],active=false;
+
+loader.load("./Lantern.glb",g=>{
+ const root=g.scene;const box=new THREE.Box3().setFromObject(root),size=box.getSize(new THREE.Vector3()),max=Math.max(size.x,size.y,size.z)||1;
+ root.scale.setScalar(3.0/max);root.position.y=-.2;lantern.add(root);
+ root.traverse(o=>{if(o.isMesh){meshes.push(o);o.frustumCulled=false}});
+},undefined,()=>fallbackLantern());
+
+function fallbackLantern(){
+ const g=new THREE.Group(),m=new THREE.MeshStandardMaterial({color:0xd98a20,metalness:.3,roughness:.35});
+ g.add(new THREE.Mesh(new THREE.CylinderGeometry(.75,.9,1.7,32,1,true),new THREE.MeshPhysicalMaterial({color:0xff9b25,transparent:true,opacity:.55,emissive:0x441600})));
+ for(let i=0;i<4;i++){let b=new THREE.Mesh(new THREE.BoxGeometry(.09,1.9,.09),m),a=i*Math.PI/2;b.position.set(Math.cos(a)*.78,0,Math.sin(a)*.78);g.add(b)}
+ let c=new THREE.Mesh(new THREE.CylinderGeometry(.9,.7,.2,32),m);c.position.y=.95;g.add(c);c=c.clone();c.position.y=-.95;g.add(c);g.position.y=-.2;lantern.add(g);g.traverse(o=>{if(o.isMesh)meshes.push(o)})
+}
+
+new THREE.TextureLoader().load("./Ganesh.png",t=>{
+ t.colorSpace=THREE.SRGBColorSpace;const r=t.image.width/t.image.height||1,h=3.5;
+ const p=new THREE.Mesh(new THREE.PlaneGeometry(h*r,h),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));
+ p.position.y=-.1;ganesh.add(p)
+},undefined,()=>{const g=new THREE.Mesh(new THREE.SphereGeometry(1.2,32,24),new THREE.MeshStandardMaterial({color:0xffa33a}));g.position.y=-.3;ganesh.add(g)});
+
+const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
+renderer.domElement.addEventListener("pointerdown",e=>{
+ if(active)return;
+ pointer.x=e.clientX/innerWidth*2-1;pointer.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(pointer,camera);
+ if(ray.intersectObjects(lantern.children,true).length)breakLantern();
+});
+
+function breakLantern(){
+ active=true;document.getElementById("hint").style.display="none";
+ const center=new THREE.Vector3(0,0,0);
+ meshes.forEach(s=>{
+   const c=s.clone(true);c.material=s.material?.clone?.()||s.material;
+   c.position.copy(s.getWorldPosition(new THREE.Vector3()));c.quaternion.copy(s.getWorldQuaternion(new THREE.Quaternion()));c.scale.copy(s.getWorldScale(new THREE.Vector3()));scene.add(c);
+   const d=c.position.clone().sub(center).normalize();
+   pieces.push({m:c,v:new THREE.Vector3(d.x*(1.3+Math.random()*2.2)+(Math.random()-.5),.8+Math.random()*2.8,d.z*(1.3+Math.random()*2.2)+(Math.random()-.5)),r:new THREE.Vector3((Math.random()-.5)*.18,(Math.random()-.5)*.18,(Math.random()-.5)*.18),life:1.25});
+ });
+ lantern.visible=false;burst(0,0,0,0xffb52e,100);
+ setTimeout(()=>{reveal();const a=document.getElementById("bhajan");a.currentTime=0;a.play().then(()=>document.getElementById("sound").style.opacity=1).catch(()=>{})},260);
+}
+
+function reveal(){
+ ganesh.visible=true;ganesh.scale.setScalar(.02);const st=performance.now();
+ function f(n){const p=Math.min((n-st)/850,1),e=1-Math.pow(1-p,4);ganesh.scale.setScalar(.02+e*.98);if(p<1)requestAnimationFrame(f)}
+ requestAnimationFrame(f);document.getElementById("title").style.display="block";document.getElementById("greeting").style.opacity=1;
+ flowers();holi();fireworks();document.getElementById("again").style.display="block";
+}
+
+function burst(x,y,z,color,n){
+ for(let i=0;i<n;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.025+Math.random()*.045,7,7),new THREE.MeshBasicMaterial({color,transparent:true}));
+ m.position.set(x,y,z);scene.add(m);particles.push({m,v:new THREE.Vector3((Math.random()-.5)*5,(Math.random()-.15)*5,(Math.random()-.5)*4),life:1.5+Math.random()})}
+}
+function flowers(){
+ const c=[0xffd84d,0xff8b24,0xff5a6f,0xffb7dc];
+ for(let i=0;i<110;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(.06,7,6),new THREE.MeshBasicMaterial({color:c[i%4],transparent:true}));
+ m.position.set((Math.random()-.5)*10,5.5+Math.random()*4,(Math.random()-.5)*4);scene.add(m);
+ particles.push({m,v:new THREE.Vector3((Math.random()-.5)*.8,-1.4-Math.random()*2,0),life:5+Math.random()*3})}
+}
+function holi(){[0xff1744,0xffd500,0x00e676,0x2979ff,0xd500f9].forEach((c,i)=>setTimeout(()=>burst((Math.random()-.5)*2,0,0,c,65),i*120))}
+function fireworks(){for(let i=0;i<8;i++)setTimeout(()=>burst((Math.random()-.5)*7,1.8+Math.random()*3.7,(Math.random()-.5)*2,[0xffd740,0xff4081,0x40c4ff,0x69f0ae][i%4],70),i*430)}
+document.getElementById("again").onclick=()=>location.reload();
+
+let last=performance.now();
+function animate(n){
+ requestAnimationFrame(animate);const dt=Math.min((n-last)/1000,.033);last=n;
+ if(!active){lantern.rotation.y=Math.sin(n*.00055)*.16;lantern.position.y=Math.sin(n*.0012)*.08}else ganesh.rotation.y=Math.sin(n*.00035)*.045;
+ for(let i=pieces.length-1;i>=0;i--){const p=pieces[i];p.v.y-=3.2*dt;p.m.position.addScaledVector(p.v,dt);p.m.rotation.x+=p.r.x;p.m.rotation.y+=p.r.y;p.m.rotation.z+=p.r.z;p.life-=dt;if(p.life<=0){scene.remove(p.m);pieces.splice(i,1)}}
+ for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.v.y-=1.4*dt;p.m.position.addScaledVector(p.v,dt);p.m.rotation.x+=.08;p.m.rotation.z+=.06;p.life-=dt;p.m.material.opacity=Math.max(0,p.life);if(p.life<=0){scene.remove(p.m);p.m.geometry.dispose();p.m.material.dispose();particles.splice(i,1)}}
+ renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight)});
+</script>
+</body>
+</html>
