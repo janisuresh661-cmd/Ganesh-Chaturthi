@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#080512">
+<title>Ganesh Chaturthi — Ideal Computer Education</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080512;font-family:Arial,Helvetica,sans-serif}
+body{color:#fff;background:radial-gradient(circle at 50% 35%,rgba(255,183,77,.18),transparent 25%),radial-gradient(circle at 50% 100%,rgba(255,61,0,.12),transparent 35%),linear-gradient(180deg,#090513,#130817 55%,#07030d)}
+#app{position:fixed;inset:0;overflow:hidden}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+#vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.55))}
+#top{position:absolute;top:18px;left:0;right:0;text-align:center;z-index:20;pointer-events:none;padding:0 15px}
+#top .small{font-size:11px;letter-spacing:3px;text-transform:uppercase;opacity:.72}
+#top h1{margin:6px 0 0;font-size:20px;letter-spacing:1px}
+#hint{position:absolute;left:50%;bottom:70px;transform:translateX(-50%);z-index:30;text-align:center;pointer-events:none;width:92%;text-shadow:0 2px 10px #000}
+#hint .main{font-size:18px;font-weight:800;letter-spacing:1px}.sub{margin-top:7px;font-size:11px;letter-spacing:2px;opacity:.78}
+#tapZone{position:absolute;z-index:25;left:50%;top:50%;width:min(82vw,420px);height:min(62vh,540px);transform:translate(-50%,-48%);border:0;background:transparent;cursor:pointer}
+#fallbackLantern{position:absolute;z-index:8;left:50%;top:45%;transform:translate(-50%,-50%);width:128px;height:172px;pointer-events:none;filter:drop-shadow(0 0 18px rgba(255,183,0,.42));transition:opacity .25s,transform .65s}
+#fallbackLantern .cap{position:absolute;top:0;left:45px;width:38px;height:13px;border-radius:7px 7px 2px 2px;background:linear-gradient(90deg,#8d4b00,#ffd65c,#9d5100)}
+#fallbackLantern .loop{position:absolute;top:-20px;left:55px;width:18px;height:24px;border:3px solid #d89a25;border-bottom:0;border-radius:18px 18px 0 0}
+#fallbackLantern .body{position:absolute;left:12px;top:16px;width:104px;height:126px;border-radius:30px 30px 25px 25px;background:linear-gradient(90deg,#7b3e00,#ffcf4d 20%,#fff0a3 50%,#ffb300 78%,#6f3700);border:3px solid #e4a52b;box-shadow:inset 0 0 14px rgba(255,255,255,.4),0 8px 22px rgba(0,0,0,.5)}
+#fallbackLantern .window{position:absolute;left:26px;top:28px;width:52px;height:68px;border-radius:50%;background:radial-gradient(circle,#fff6bd,#ffbd32 38%,#d45b00);border:3px solid rgba(112,53,0,.75);box-shadow:0 0 22px rgba(255,194,50,.9)}
+#fallbackLantern .bar{position:absolute;top:15px;bottom:15px;width:4px;border-radius:4px;background:rgba(102,48,0,.55)}
+#fallbackLantern .bar.b1{left:30px}.bar.b2{left:50px}.bar.b3{left:70px}
+#fallbackLantern .bottom{position:absolute;left:31px;bottom:0;width:66px;height:18px;border-radius:2px 2px 15px 15px;background:linear-gradient(90deg,#8a4500,#ffd34e,#8a4500)}
+#fallbackLantern.burst{opacity:0;transform:translate(-50%,-50%) scale(.45) rotate(18deg)}
+#ganeshWrap{position:absolute;z-index:18;left:50%;top:46%;transform:translate(-50%,-50%) scale(.55);width:min(78vw,410px);max-height:58vh;opacity:0;pointer-events:none;transition:opacity .9s,transform .9s cubic-bezier(.16,1,.3,1);display:flex;align-items:center;justify-content:center}
+#ganeshWrap.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#ganesh{display:block;max-width:100%;max-height:58vh;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 0 24px rgba(255,174,0,.5))}
+#message{position:absolute;z-index:19;left:50%;top:78%;transform:translate(-50%,-50%) translateY(20px);width:94%;text-align:center;opacity:0;pointer-events:none;transition:opacity 1s .4s,transform 1s .4s}
+#message.show{opacity:1;transform:translate(-50%,-50%) translateY(0)}
+#message .title{font-size:clamp(23px,6vw,34px);font-weight:900;text-shadow:0 3px 18px #000}
+#message .from{margin-top:8px;font-size:clamp(13px,3.5vw,17px);letter-spacing:1.5px;font-weight:700}
+#replay{position:absolute;z-index:40;bottom:18px;right:16px;border:1px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border-radius:999px;padding:8px 14px;font-size:11px;letter-spacing:1px;display:none}
+#status{position:absolute;z-index:35;top:76px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:1px;opacity:.6;pointer-events:none;text-align:center}
+.flower{font-size:22px;position:absolute;z-index:23;pointer-events:none;animation:flowerfall 2.4s ease-in forwards}
+@keyframes flowerfall{0%{transform:translateY(-15vh) rotate(0) scale(.7);opacity:0}10%{opacity:1}100%{transform:translate(var(--x),105vh) rotate(var(--r)) scale(1.1);opacity:0}}
+.colorBurst{position:absolute;z-index:17;left:50%;top:47%;width:12px;height:12px;border-radius:50%;pointer-events:none;animation:colorburst 1.2s ease-out forwards}
+@keyframes colorburst{0%{transform:translate(-50%,-50%) scale(.2);opacity:1}100%{transform:translate(-50%,-50%) scale(28);opacity:0}}
+.firework{position:absolute;z-index:12;width:4px;height:4px;border-radius:50%;pointer-events:none;animation:fire 1.1s ease-out forwards}
+@keyframes fire{0%{box-shadow:0 0 transparent;opacity:1}100%{box-shadow:var(--shadows);opacity:0}}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="scene"></canvas>
+<div id="fallbackLantern" aria-hidden="true">
+  <div class="loop"></div><div class="cap"></div>
+  <div class="body"><div class="window"></div><div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div></div>
+  <div class="bottom"></div>
+</div>
+<div id="top"><div class="small">Ganesh Chaturthi</div><h1>🙏 A Divine Celebration 🙏</h1></div>
+<div id="status">Preparing the lantern…</div>
+<div id="ganeshWrap"><img id="ganesh" alt="Lord Ganesha"></div>
+<div id="message"><div class="title">🌺 Happy Ganesh Chaturthi 🌺</div><div class="from">Ideal Computer Education, Titilagarh</div></div>
+<div id="hint"><div class="main">✨ TOUCH THE LANTERN ✨</div><div class="sub">Touch to reveal the divine celebration</div></div>
+<button id="tapZone" aria-label="Touch the lantern"></button>
+<button id="replay">↻ REPLAY</button>
+<div id="vignette"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* IMPORTANT: absolute GitHub Pages URLs make the downloaded HTML work too. */
+const BASE="https://janisuresh661-cmd.github.io/Ganesh-Chaturthi/";
+const GANESH_SRC=BASE+"Ganesh.png";
+const AUDIO_SRC=BASE+"Ganesh%20Music.mp3";
+const LANTERN_SRC=BASE+"Lantern.glb";
+
+const canvas=document.getElementById("scene"), tapZone=document.getElementById("tapZone");
+const fallback=document.getElementById("fallbackLantern"), ganeshWrap=document.getElementById("ganeshWrap");
+const ganesh=document.getElementById("ganesh"), message=document.getElementById("message");
+const hint=document.getElementById("hint"), status=document.getElementById("status"), replay=document.getElementById("replay");
+
+ganesh.src=GANESH_SRC;
+
+let scene3d,camera,renderer,lanternGroup,breakPieces=[],modelLoaded=false,exploded=false,audio=null;
+
+function setStatus(t){status.textContent=t}
+
+function initThree(){
+ if(!window.THREE||!THREE.GLTFLoader){setStatus("Lantern ready");return}
+ try{
+  scene3d=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.01,100);
+  camera.position.set(0,.15,5.8);
+  renderer=new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth,innerHeight);
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  scene3d.add(new THREE.AmbientLight(0xffffff,1.7));
+  const key=new THREE.PointLight(0xffc04a,6,15);key.position.set(2,3,4);scene3d.add(key);
+  const fill=new THREE.PointLight(0x9c6cff,2.5,12);fill.position.set(-3,0,2);scene3d.add(fill);
+
+  const loader=new THREE.GLTFLoader();
+  setStatus("Loading lantern…");
+  loader.load(LANTERN_SRC,function(gltf){
+   lanternGroup=new THREE.Group();scene3d.add(lanternGroup);
+   const source=gltf.scene;source.updateMatrixWorld(true);
+   const box=new THREE.Box3().setFromObject(source), size=new THREE.Vector3(), center=new THREE.Vector3();
+   box.getSize(size);box.getCenter(center);
+   const maxDim=Math.max(size.x,size.y,size.z)||1;
+   source.position.sub(center);source.scale.setScalar(2.55/maxDim);source.position.y=-.05;source.updateMatrixWorld(true);
+   source.traverse(function(obj){
+    if(obj.isMesh){
+     const piece=obj.clone();
+     piece.position.copy(obj.getWorldPosition(new THREE.Vector3()));
+     piece.quaternion.copy(obj.getWorldQuaternion(new THREE.Quaternion()));
+     piece.scale.copy(obj.getWorldScale(new THREE.Vector3()));
+     piece.userData.velocity=new THREE.Vector3();piece.userData.spin=new THREE.Vector3();
+     breakPieces.push(piece);lanternGroup.add(piece);
+    }
+   });
+   if(breakPieces.length){modelLoaded=true;fallback.style.opacity="0";setStatus("Lantern ready")}
+  },undefined,function(err){console.log("Lantern load failed",err);setStatus("Lantern ready")});
+
+  (function render(){renderer.render(scene3d,camera);requestAnimationFrame(render)})();
+  addEventListener("resize",function(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)})
+ }catch(e){console.log(e);setStatus("Lantern ready")}
+}
+
+function playBhajan(){
+ /* Audio is created and played directly inside the user's pointer event. */
+ if(!audio) audio=new Audio(AUDIO_SRC);
+ audio.preload="auto";audio.volume=1;
+ audio.load();
+ const p=audio.play();
+ if(p&&p.catch)p.catch(function(err){console.log("Audio play blocked:",err)});
+}
+
+function flowers(){
+ const f=["🌸","🌼","🌺","🌻","💮"];
+ for(let i=0;i<34;i++){let e=document.createElement("div");e.className="flower";e.textContent=f[Math.floor(Math.random()*f.length)];
+ e.style.left=Math.random()*100+"vw";e.style.top=(-10-Math.random()*30)+"vh";e.style.setProperty("--x",Math.random()*160-80+"px");e.style.setProperty("--r",Math.random()*720-360+"deg");e.style.animationDelay=Math.random()*.5+"s";document.body.appendChild(e);setTimeout(()=>e.remove(),4500)}
+}
+function colors(){
+ const c=["#ff1744","#ffea00","#00e5ff","#76ff03","#ff6d00","#d500f9"];
+ c.forEach((x,i)=>{let e=document.createElement("div");e.className="colorBurst";e.style.background=x;e.style.marginLeft=(Math.random()*30-15)+"vw";e.style.marginTop=(Math.random()*18-9)+"vh";e.style.animationDelay=i*.08+"s";document.body.appendChild(e);setTimeout(()=>e.remove(),1600)})
+}
+function fireworks(){
+ for(let w=0;w<5;w++)setTimeout(()=>{let e=document.createElement("div");e.className="firework";e.style.left=15+Math.random()*70+"vw";e.style.top=15+Math.random()*35+"vh";
+ let s=[];for(let i=0;i<26;i++){let a=Math.PI*2*i/26,d=25+Math.random()*55;s.push(Math.cos(a)*d+"px "+Math.sin(a)*d+"px 0 1px rgba(255,210,60,.9)")}
+ e.style.setProperty("--shadows",s.join(","));document.body.appendChild(e);setTimeout(()=>e.remove(),1400)},w*180)
+}
+function explode(){
+ if(!modelLoaded)return;
+ breakPieces.forEach(p=>{let d=p.position.clone().normalize();if(d.length()<.1)d.set(Math.random()-.5,Math.random()-.25,Math.random()-.5).normalize();p.userData.velocity.copy(d.multiplyScalar(.05+Math.random()*.07));p.userData.velocity.y+=.03+Math.random()*.03;p.userData.spin.set((Math.random()-.5)*.12,(Math.random()-.5)*.12,(Math.random()-.5)*.12)});
+ let n=0;(function move(){n++;breakPieces.forEach(p=>{p.position.add(p.userData.velocity);p.userData.velocity.y-=.0016;p.rotation.x+=p.userData.spin.x;p.rotation.y+=p.userData.spin.y;p.rotation.z+=p.userData.spin.z});if(n<120)requestAnimationFrame(move);else breakPieces.forEach(p=>p.visible=false)})()
+}
+function reveal(){
+ if(exploded)return;exploded=true;tapZone.style.pointerEvents="none";hint.style.opacity="0";setStatus("");
+ playBhajan();fallback.classList.add("burst");explode();colors();flowers();fireworks();
+ setTimeout(()=>{ganeshWrap.classList.add("show");message.classList.add("show");replay.style.display="block"},300);
+}
+tapZone.addEventListener("pointerdown",function(e){e.preventDefault();reveal()},{passive:false});
+replay.addEventListener("click",()=>location.reload());
+
+/* If Ganesh image cannot be fetched, show a useful message instead of a broken-image icon. */
+ganesh.addEventListener("error",function(){console.log("Ganesh image could not be loaded:",GANESH_SRC);ganesh.style.display="none";setStatus("Ganesh image could not be loaded")});
+
+initThree();
+})();
+</script>
+</body>
+</html>
